@@ -12,7 +12,7 @@ Use of the Eutils from NCBI to retrieve genomes using Biopython
 To retrieve all genomes (WGS and complete) from refseq
 
 #### Example
-`WGS-fetch.py -q Escherichiacoli -e you@example.com -o /some/directory -l 4-7`
+`WGS-fetch.py -q Escherichia+coli -e you@example.com -o /some/directory -l 4-7`
 
 
 #### Usage
