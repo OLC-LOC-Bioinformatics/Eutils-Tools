@@ -18,7 +18,7 @@ from argparse import ArgumentParser
 from StringIO import StringIO
 from gzip import GzipFile
 
-dqueue = Queue() # Queue for multithreading using pthreads
+dqueue = Queue()  # Queue for multithreading using pthreads
 
 
 def parser(dqueue):
@@ -93,13 +93,14 @@ def dlthreads(email, organism, path, length):
         os.mkdir(path)
     path = os.path.join(path, '')
     Entrez.email = email
-    searchterm = "(%s[Organism])+AND+\"%i\"[SLEN]:\"%i\"[SLEN]+srcdb+refseq[prop]" \
+    searchterm = "(%s)+AND+\"%i\"[SLEN]:\"%i\"[SLEN]" \
                  % (organism, (int(lengthrange[0]) * 10**6), (int(lengthrange[1]) * 10**6))
     search = Entrez.esearch(db="nuccore",
                             term=searchterm,
                             retmax=10000)
     print search.url
     search = Entrez.read(search)
+    print "[%s] Found %s genome records" % (time.strftime("%H:%M:%S"), search['Count'])
     for i in range(3):
         threads = Thread(target=parser, args=(dqueue,))
         threads.setDaemon(True)
