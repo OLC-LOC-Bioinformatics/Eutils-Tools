@@ -93,7 +93,7 @@ def dlthreads(email, organism, path, length):
         os.mkdir(path)
     path = os.path.join(path, '')
     Entrez.email = email
-    searchterm = "(%s)+AND+\"%i\"[SLEN]:\"%i\"[SLEN]" \
+    searchterm = "(%s)[Organism]+AND+\"%i\"[SLEN]:\"%i\"[SLEN]" \
                  % (organism, (int(lengthrange[0]) * 10**6), (int(lengthrange[1]) * 10**6))
     search = Entrez.esearch(db="nuccore",
                             term=searchterm,
