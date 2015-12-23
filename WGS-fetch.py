@@ -86,9 +86,9 @@ def parser(dqueue):
             print "[%s] Downloading #%i %s..." % (time.strftime("%H:%M:%S"), count, name)
             SeqIO.write(record, fasta, "fasta")
         fasta.close()
-        dqueue.task_done()
     except KeyboardInterrupt:
         raise KeyboardInterruptError()
+    dqueue.task_done()
 
 
 def dlthreads(email, organism, path, length, arg=''):
