@@ -107,6 +107,7 @@ def dlthreads(email, organism, path, length, arg=''):
                             retmax=10000)
     # print search.url
     search = Entrez.read(search)
+    print "[%s] Found %s genome records" % (time.strftime("%H:%M:%S"), search['Count'])
     for i in range(3):
         threads = Thread(target=parser, args=(dqueue,))
         threads.setDaemon(True)
