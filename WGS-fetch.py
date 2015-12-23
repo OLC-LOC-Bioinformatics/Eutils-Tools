@@ -90,7 +90,8 @@ def parser(dqueue):
     except KeyboardInterrupt:
         raise KeyboardInterruptError()
 
-def dlthreads(email, organism, path, length):
+
+def dlthreads(email, organism, path, length, arg=''):
     organism = organism.replace('_', '+')
     count = 0
     lengthrange = length.split("-")
@@ -98,8 +99,8 @@ def dlthreads(email, organism, path, length):
         os.mkdir(path)
     path = os.path.join(path, '')
     Entrez.email = email
-    searchterm = "({0:s}[Organism])+AND+\"{1:d}\"[SLEN]:\"{2:d}\"[SLEN]+srcdb+refseq[prop]" \
-        .format(organism, (int(lengthrange[0]) * 10 ** 6), (int(lengthrange[1]) * 10 ** 6))
+    searchterm = "({0:s})+AND+\"{1:d}\"[SLEN]:\"{2:d}\"[SLEN]+srcdb+refseq[prop]+" \
+        .format(organism, (int(lengthrange[0]) * 10 ** 6), (int(lengthrange[1]) * 10 ** 6)) + arg
     search = Entrez.esearch(db="nuccore",
                             term=searchterm,
                             retmax=10000)
@@ -133,6 +134,12 @@ parse.add_argument('-q', '--query', required=True, help='Query for genome databa
 parse.add_argument('-e', '--email', required=True, help='A valid email address is required')
 parse.add_argument('-o', '--output', required=True, help='Specify output directory')
 parse.add_argument('-l', '--length', required=True, help='The range of length for the full genome, the default is 4-7 Mb for E.coli. The default a range in megabases')
+parse.add_argument('-c', '--chromosome', action='store_true', help='Specify additional search parameters')
 
-args = vars(parse.parse_args())
-dlthreads(args['email'], args['query'], args['output'], args['length'])
+args = parse.parse_args()
+if args.chromosome:
+    args = vars(args)
+    dlthreads(args['email'], args['query'], args['output'], args['length'], 'gene+in+chromosome[prop]')
+else:
+    args = vars(args)
+    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['length'])
