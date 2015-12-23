@@ -10,7 +10,7 @@ from urllib2 import URLError, HTTPError
 
 start = 0
 
-import urllib, os
+import urllib, os, sys
 from re import sub
 from threading import Thread
 from Queue import Queue
@@ -20,13 +20,16 @@ from gzip import GzipFile
 
 dqueue = Queue() # Queue for multithreading using pthreads
 
+class KeyboardInterruptError(Exception):
+    pass
+
 
 def parser(dqueue):
     """
     :param dqueue: Queue for multiple downloads at once
     :return: fasta WGS or complete chromosome
     """
-    while True:  # this is a loop to help multithreading
+    try:  # this is a loop to help multithreading
         gi, count, path = dqueue.get()  # retrieve tuple from the queue
         connected = False  # Start not connected
         while not connected:  # Loop to overcome connection issues with a terrible network
@@ -84,6 +87,8 @@ def parser(dqueue):
             SeqIO.write(record, fasta, "fasta")
         fasta.close()
         dqueue.task_done()
+    except KeyboardInterrupt:
+        raise KeyboardInterruptError()
 
 def dlthreads(email, organism, path, length):
     organism = organism.replace('_', '+')
@@ -93,21 +98,32 @@ def dlthreads(email, organism, path, length):
         os.mkdir(path)
     path = os.path.join(path, '')
     Entrez.email = email
-    searchterm = "(%s[Organism])+AND+\"%i\"[SLEN]:\"%i\"[SLEN]+srcdb+refseq[prop]" \
-                 % (organism, (int(lengthrange[0]) * 10**6), (int(lengthrange[1]) * 10**6))
+    searchterm = "({0:s}[Organism])+AND+\"{1:d}\"[SLEN]:\"{2:d}\"[SLEN]+srcdb+refseq[prop]" \
+        .format(organism, (int(lengthrange[0]) * 10 ** 6), (int(lengthrange[1]) * 10 ** 6))
     search = Entrez.esearch(db="nuccore",
                             term=searchterm,
                             retmax=10000)
-    print search.url
+    # print search.url
     search = Entrez.read(search)
     for i in range(3):
         threads = Thread(target=parser, args=(dqueue,))
         threads.setDaemon(True)
         threads.start()
-    for i in search["IdList"]:
-        count += 1
-        dqueue.put((i, count, path))
-    dqueue.join()
+    try:
+        for i in search["IdList"]:
+            count += 1
+            dqueue.put((i, count, path))
+        dqueue.join()
+    except KeyboardInterrupt:
+        print "[{0:s}] Got ^C while pool mapping, terminating the pool".format(time.strftime("%H:%M:%S"))
+        dqueue.empty()
+        print '[{0:s}] pool is terminated'
+        sys.exit(127)
+    except Exception, e:
+        print "[{0:s}] Got exception: {1!r:s}, terminating the pool".format(time.strftime("%H:%M:%S"), e)
+        dqueue.empty()
+        print "[{0:s}] Pool is terminated".format(time.strftime("%H:%M:%S"))
+        sys.exit(127)
 '''
 Parser for arguments test
 '''
