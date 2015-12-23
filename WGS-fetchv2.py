@@ -113,10 +113,10 @@ def parser(dqueue):
                 url = "https://www.ncbi.nlm.nih.gov/Traces/wgs/?download=" + urlid[:5] + "1.1.fsa_nt.gz"
                 gburl = "https://www.ncbi.nlm.nih.gov/Traces/wgs/?download=" + urlid[:5] + "1.1.gbff.gz"
                 fasta = open(filename, 'w')
-                gbfile = open(gbfilename, "w")
+                # gbfile = open(gbfilename, "w")
                 try:
                     dlunzip(url, fasta)
-                    dlunzip(gburl, gbfile)
+                    # dlunzip(gburl, gbfile)
 
                     print "[%s] Downloading and unzipping #%i %s with %i contigs and %.2fX coverage..." \
                           % (time.strftime("%H:%M:%S"), count, name, wgs, coverage)
@@ -125,12 +125,13 @@ def parser(dqueue):
                     print "[%s] Downloading #%i %s..." % (time.strftime("%H:%M:%S"), count, name)
                     SeqIO.write(record, fasta, "fasta")
 
-                    SeqIO.write(record, gbfile, "gb")
-                gbfile.close()
+                    # SeqIO.write(record, gbfile, "gb")
+                # gbfile.close()
                 fasta.close()
-            dqueue.task_done()
+
         except KeyboardInterrupt:
             raise KeyboardInterruptError()
+        dqueue.task_done()
 
 
 def dlthreads(email, organism, path, length, contigs, coverage):
