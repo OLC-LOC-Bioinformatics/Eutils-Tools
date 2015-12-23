@@ -10,7 +10,7 @@ from urllib2 import URLError, HTTPError
 
 start = 0
 
-import urllib, os
+import urllib, os, sys
 from re import sub, search
 from threading import Thread
 from Queue import Queue
