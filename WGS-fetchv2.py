@@ -175,7 +175,7 @@ parse = ArgumentParser(description='Download genomes for organism')
 parse.add_argument('--version', action='version', version='%(prog)s v0.4')
 parse.add_argument('-q', '--query', required=True, help='Query for genome database separated by plus sign(s)')
 parse.add_argument('-e', '--email', required=True, help='A valid email address is required')
-parse.add_argument('-o', '--output', required=True, help='Specify output directory')
+parse.add_argument('-o', '--output', default=os.getcwd(), help='Specify output directory')
 parse.add_argument('-l', '--length', required=True,
                    help='The range of length for the full genome, the default is 4-7 Mb for E.coli. The default a range in megabases')
 parse.add_argument('-c', '--contigs', default=1000, help='Upper limit of contig quatity (default = 250)')
