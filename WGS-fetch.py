@@ -92,7 +92,7 @@ def parser(dqueue):
         dqueue.task_done()
 
 
-def dlthreads(email, organism, path, length, arg='', start):
+def dlthreads(email, organism, path, length, start, arg='',):
     organism = organism.replace('_', '+')
     count = start
     lengthrange = length.split("-")
@@ -143,7 +143,7 @@ parse.add_argument('-s', '--start', default=0, help='Specify additional start pa
 args = parse.parse_args()
 if args.chromosome:
     args = vars(args)
-    dlthreads(args['email'], args['query'], args['output'], args['length'], 'gene+in+chromosome[prop]', args['start'])
+    dlthreads(args['email'], args['query'], args['output'], args['length'],  args['start'], 'gene+in+chromosome[prop]')
 else:
     args = vars(args)
-    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['length'],  args['start'])
+    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['start'], args['length'])
