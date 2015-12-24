@@ -92,9 +92,9 @@ def parser(dqueue):
         dqueue.task_done()
 
 
-def dlthreads(email, organism, path, length, start, arg='',):
+def dlthreads(email, organism, path, length, retstart, arg='',):
     organism = organism.replace('_', '+')
-    count = start
+    count = retstart
     lengthrange = length.split("-")
     if not os.path.isdir(path):
         os.mkdir(path)
@@ -105,7 +105,7 @@ def dlthreads(email, organism, path, length, start, arg='',):
     search = Entrez.esearch(db="nuccore",
                             term=searchterm,
                             retmax=10000,
-                            retstart=start)
+                            retstart=retstart)
     # print search.url
     search = Entrez.read(search)
     print "[%s] Found %s genome records" % (time.strftime("%H:%M:%S"), search['Count'])
