@@ -146,4 +146,4 @@ if args.chromosome:
     dlthreads(args['email'], args['query'], args['output'], args['length'],  args['start'], 'gene+in+chromosome[prop]')
 else:
     args = vars(args)
-    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['start'], args['length'])
+    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['length'], args['start'])
