@@ -46,7 +46,7 @@ def parser(dqueue):
                 except ValueError:
                     print "[%s] No records found in handle" % (time.strftime("%H:%M:%S"))
                     connected = True
-                except HTTPError:
+                except (HTTPError, URLError):
                     print "[%s] Unable to connect trying again in 5 seconds" % (time.strftime("%H:%M:%S"))
                     time.sleep(5)
             record = SeqIO.read(fetch, "fasta")  # reads the fasta data from NCBI
@@ -92,9 +92,9 @@ def parser(dqueue):
         dqueue.task_done()
 
 
-def dlthreads(email, organism, path, length, arg=''):
+def dlthreads(email, organism, path, length, arg='', start):
     organism = organism.replace('_', '+')
-    count = 0
+    count = start
     lengthrange = length.split("-")
     if not os.path.isdir(path):
         os.mkdir(path)
@@ -104,7 +104,8 @@ def dlthreads(email, organism, path, length, arg=''):
         .format(organism, (int(lengthrange[0]) * 10 ** 6), (int(lengthrange[1]) * 10 ** 6)) + arg
     search = Entrez.esearch(db="nuccore",
                             term=searchterm,
-                            retmax=10000)
+                            retmax=10000,
+                            retstart=start)
     # print search.url
     search = Entrez.read(search)
     print "[%s] Found %s genome records" % (time.strftime("%H:%M:%S"), search['Count'])
@@ -137,11 +138,12 @@ parse.add_argument('-e', '--email', required=True, help='A valid email address i
 parse.add_argument('-o', '--output', required=True, help='Specify output directory')
 parse.add_argument('-l', '--length', required=True, help='The range of length for the full genome, the default is 4-7 Mb for E.coli. The default a range in megabases')
 parse.add_argument('-c', '--chromosome', action='store_true', help='Specify additional search parameters')
+parse.add_argument('-s', '--start', default=0, help='Specify additional start parameters')
 
 args = parse.parse_args()
 if args.chromosome:
     args = vars(args)
-    dlthreads(args['email'], args['query'], args['output'], args['length'], 'gene+in+chromosome[prop]')
+    dlthreads(args['email'], args['query'], args['output'], args['length'], 'gene+in+chromosome[prop]', args['start'])
 else:
     args = vars(args)
-    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['length'])
+    dlthreads(args['email'], args['query']+'[Organism]', args['output'], args['length'],  args['start'])
