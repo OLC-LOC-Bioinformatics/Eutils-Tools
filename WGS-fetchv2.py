@@ -79,7 +79,8 @@ def parser(dqueue):
                 coverage = float(search("Coverage\s+::[\s>]*\s*(complete\s*:\s)*(\d[\d\.]*)",
                                         record.annotations['comment']).group(2))
                 wgs = int(record.annotations['wgs'][-1][-5:])
-            except AttributeError:
+            except (AttributeError, ValueError):
+                wgs = 0
                 coverage = 0
             except KeyError:
                 wgs = 1
