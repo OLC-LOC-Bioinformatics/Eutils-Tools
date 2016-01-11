@@ -1,8 +1,5 @@
 __author__ = 'mikeknowles'
-"""
-This script will download genomes for the orgamism provided
-Below is are the required modules to run
-"""
+__doc__ = """This script will download genomes for the orgamism provided below is are the required modules to run"""
 
 from Bio import SeqIO, Entrez
 import time
@@ -132,8 +129,8 @@ parse.add_argument('-q', '--query', required=True, help='Query for genome databa
 parse.add_argument('-e', '--email', required=True, help='A valid email address is required')
 parse.add_argument('-o', '--output', required=True, help='Specify output directory')
 parse.add_argument('-l', '--length', required=True, help='The range of length for the full genome, the default is 4-7 Mb for E.coli. The default a range in megabases')
-parse.add_argument('-c', '--chromosome', action='store_true', help='Specify additional search parameters')
-parse.add_argument('-s', '--start', default=0, help='Specify additional start parameters')
+parse.add_argument('-c', '--chromosome', action='store_true', help='Download only complete genomes')
+parse.add_argument('-s', '--start', default=0, help='Specify start location if downloaded is interrupted')
 
 args = parse.parse_args()
 if args.chromosome:
