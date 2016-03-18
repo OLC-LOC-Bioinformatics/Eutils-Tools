@@ -14,7 +14,8 @@ from Queue import Queue
 from argparse import ArgumentParser
 from StringIO import StringIO
 from gzip import GzipFile
-
+import warnings
+warnings.filterwarnings("ignore")
 dqueue = Queue()  # Queue for multithreading using pthreads
 
 class KeyboardInterruptError(Exception):
@@ -48,7 +49,10 @@ def parser(dqueue):
                     time.sleep(5)
             record = SeqIO.read(fetch, frmt)  # reads the fasta data from NCBI
             fetch.close()  # Good practise to close unused handles
-            ecoli = record.description.replace(record.id, "")[1:].split(",")[0]  # string split
+            if frmt == 'fasta':
+                ecoli = record.description.replace(record.id, "")[1:].split(",")[0]  # string split
+            else:
+                ecoli = record.description.replace(record.id, "").split(",")[0]  # string split
             print "[%s] Processing %s GI:%s" % (time.strftime("%H:%M:%S"), ecoli, gi)
             ecoli += '_' + gi
             filename = sub('[^A-Za-z0-9]+str[ain.]*[^A-Za-z0-9]*|[^A-Za-z0-9]+subsp\.*[^A-Za-z0-9]*'
