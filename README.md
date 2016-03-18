@@ -43,6 +43,8 @@ optional arguments:
                         
   -c, --chromosome      Download only complete genomes
   
+  -gb, --genbank        Download Genbank files, mutually exlcusive with fasta download
+  
   -s START, --start START
   
                         Specify start location if downloaded is interrupted
