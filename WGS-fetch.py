@@ -28,13 +28,13 @@ def parser(dqueue):
     """
     while True:  # this is a loop to help multithreading
         try:
-            gi, count, path = dqueue.get()  # retrieve tuple from the queue
+            gi, count, path, rettype, frmt, ext, urlext = dqueue.get()  # retrieve tuple from the queue
             connected = False  # Start not connected
             while not connected:  # Loop to overcome connection issues with a terrible network
                 try:
                     fetch = Entrez.efetch(db="nuccore",
                                           id=gi,
-                                          rettype='fasta',
+                                          rettype=rettype,
                                           retmode='text')
                     connected = True
                 except IndexError:
@@ -46,7 +46,7 @@ def parser(dqueue):
                 except (HTTPError, URLError):
                     print "[%s] Unable to connect trying again in 5 seconds" % (time.strftime("%H:%M:%S"))
                     time.sleep(5)
-            record = SeqIO.read(fetch, "fasta")  # reads the fasta data from NCBI
+            record = SeqIO.read(fetch, frmt)  # reads the fasta data from NCBI
             fetch.close()  # Good practise to close unused handles
             ecoli = record.description.replace(record.id, "")[1:].split(",")[0]  # string split
             print "[%s] Processing %s GI:%s" % (time.strftime("%H:%M:%S"), ecoli, gi)
@@ -55,14 +55,14 @@ def parser(dqueue):
                            '|[^A-Za-z0-9]+serovar\.*[^A-Za-z0-9]*|[^A-Za-z0-9]+', '_', ecoli)
             name = filename.replace("_complete_genome", "")
             # Create filename for a cataloging and removing unneccesary bits
-            filename = path + name + ".fasta"
+            filename = os.path.join(path, name + ext)
             fasta = open(filename, 'w')
             if "_" in record.id:
                 urlid = record.id.split("_")[-1]
             else:
                 urlid = record.id
             # faster method to retrive genomes
-            url = "https://www.ncbi.nlm.nih.gov/Traces/wgs/?download=" + urlid[:5] + "1.1.fsa_nt.gz"
+            url = "https://www.ncbi.nlm.nih.gov/Traces/wgs/?download=" + urlid[:5] + urlext
             try:
                 source = urllib.urlopen(url).read()
                 compressedFile = StringIO()
@@ -83,14 +83,14 @@ def parser(dqueue):
             except IOError:
                 fasta = open(filename, "w")
                 print "[%s] Downloading #%i %s..." % (time.strftime("%H:%M:%S"), count, name)
-                SeqIO.write(record, fasta, "fasta")
+                SeqIO.write(record, fasta, frmt)
             fasta.close()
         except KeyboardInterrupt:
             raise KeyboardInterruptError()
         dqueue.task_done()
 
 
-def dlthreads(email, organism, path, length, retstart, arg='',):
+def dlthreads(email, organism, path, length, retstart, rettypes, arg='',):
     organism = organism.replace('_', '+')
     count = retstart
     lengthrange = length.split("-")
@@ -114,7 +114,7 @@ def dlthreads(email, organism, path, length, retstart, arg='',):
     try:
         for i in search["IdList"]:
             count += 1
-            dqueue.put((i, count, path))
+            dqueue.put((i, count, path) + rettypes)
         dqueue.join()
     except KeyboardInterrupt:
         print "[{0:s}] Got ^C while pool mapping, terminating the pool".format(time.strftime("%H:%M:%S"))
@@ -135,8 +135,14 @@ if __name__ == '__main__':
     parse.add_argument('-c', '--chromosome', action='store_true', help='Download only complete genomes')
     parse.add_argument('-s', '--start', default=0, help='Specify start location if downloaded is interrupted')
     parse.add_argument('-d', '--date', help='Specify a start date to download sequence from in YYYY/MM/DD')
+    parse.add_argument('-gb', '--genbank', action='store_true', help='Download Genbank files, mutually exlcusive with fasta download')
 
     args = parse.parse_args()
+
+    if args.genbank:
+        rettypes = ('gbwithparts', 'gb', '.gbk', '1.1.gbff.gz')
+    else:
+        rettypes = ('fasta', 'fasta', '.fasta', '1.1.fsa_nt.gz')
     other = ''
     if args.chromosome:
         other += 'gene+in+chromosome[prop]'
@@ -147,4 +153,4 @@ if __name__ == '__main__':
         except ValueError:
             raise ValueError("Incorrect data format, should be YYYY/MM/DD")
         other += '+\"{}\"[pdat]: \"3000\"[pdat]'.format(args.date)
-    dlthreads(args.email, args.query, args.output, args.length,  args.start, other)
+    dlthreads(args.email, args.query, args.output, args.length,  args.start, rettypes, other)

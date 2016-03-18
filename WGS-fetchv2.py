@@ -26,21 +26,21 @@ class KeyboardInterruptError(Exception):
     pass
 
 def dlunzip(url, handle):
-        source = urllib.urlopen(url).read()
-        compressedFile = StringIO()
-        compressedFile.write(source)
-        #
-        # Set the file's current position to the beginning
-        # of the file so that gzip.GzipFile can read
-        # its contents from the top.
-        #
-        compressedFile.seek(0)
+    source = urllib.urlopen(url).read()
+    compressedFile = StringIO()
+    compressedFile.write(source)
+    #
+    # Set the file's current position to the beginning
+    # of the file so that gzip.GzipFile can read
+    # its contents from the top.
+    #
+    compressedFile.seek(0)
 
-        decompressedFile = GzipFile(fileobj=compressedFile, mode='rb')
-        # with open(filename, 'w') as outfile:
-        #     outfile.write(decompressedFile.read())
+    decompressedFile = GzipFile(fileobj=compressedFile, mode='rb')
+    # with open(filename, 'w') as outfile:
+    #     outfile.write(decompressedFile.read())
 
-        handle.write(decompressedFile.read())
+    handle.write(decompressedFile.read())
 
 
 def parser(dqueue):
@@ -114,10 +114,10 @@ def parser(dqueue):
                 url = "https://www.ncbi.nlm.nih.gov/Traces/wgs/?download=" + urlid[:5] + "1.1.fsa_nt.gz"
                 gburl = "https://www.ncbi.nlm.nih.gov/Traces/wgs/?download=" + urlid[:5] + "1.1.gbff.gz"
                 fasta = open(filename, 'w')
-                # gbfile = open(gbfilename, "w")
+                gbfile = open(gbfilename, "w")
                 try:
                     dlunzip(url, fasta)
-                    # dlunzip(gburl, gbfile)
+                    dlunzip(gburl, gbfile)
 
                     print "[%s] Downloading and unzipping #%i %s with %i contigs and %.2fX coverage..." \
                           % (time.strftime("%H:%M:%S"), count, name, wgs, coverage)
@@ -126,8 +126,8 @@ def parser(dqueue):
                     print "[%s] Downloading #%i %s..." % (time.strftime("%H:%M:%S"), count, name)
                     SeqIO.write(record, fasta, "fasta")
 
-                    # SeqIO.write(record, gbfile, "gb")
-                # gbfile.close()
+                    SeqIO.write(record, gbfile, "gb")
+                gbfile.close()
                 fasta.close()
 
         except KeyboardInterrupt:
@@ -179,7 +179,8 @@ parse.add_argument('-q', '--query', required=True, help='Query for genome databa
 parse.add_argument('-e', '--email', required=True, help='A valid email address is required')
 parse.add_argument('-o', '--output', default=os.getcwd(), help='Specify output directory')
 parse.add_argument('-l', '--length', required=True,
-                   help='The range of length for the full genome, the default is 4-7 Mb for E.coli. The default a range in megabases')
+                   help='The range of length for the full genome, the default is 4-7 Mb for E.coli. '
+                        'The default a range in megabases')
 parse.add_argument('-c', '--contigs', default=1000, help='Upper limit of contig quatity (default = 250)')
 parse.add_argument('-f', '--coverage', default=10.0, help='Lower limit of coverage for genome (default = 10.0)')
 parse.add_argument('-d', '--date', help='Specify a start date to download sequence from in YYYY/MM/DD')
