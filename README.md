@@ -16,7 +16,7 @@ To retrieve all genomes (WGS and complete) from refseq
 
 
 #### Usage
-
+```
 usage: `WGS-fetch.py [-h] [--version] -q QUERY -e EMAIL -o OUTPUT -l LENGTH [-c] [-s START]``
 
 Download genomes for organism
@@ -80,4 +80,4 @@ optional arguments:
   -f COVERAGE, --coverage COVERAGE
   
                         Lower limit of coverage for genome (default = 10.0)
-
+```
